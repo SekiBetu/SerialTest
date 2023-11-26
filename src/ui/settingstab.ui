@@ -40,7 +40,7 @@
         <x>0</x>
         <y>0</y>
         <width>506</width>
-        <height>626</height>
+        <height>789</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -430,6 +430,13 @@ If no config file is detected, This app will create one in the current working d
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="Data_recordDataBox">
+            <property name="text">
+             <string>Remember data to be sent in DataTab</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_11">
             <item>
              <widget class="QCheckBox" name="Data_mergeTimestampBox">
@@ -472,6 +479,13 @@ If no config file is detected, This app will create one in the current working d
              </spacer>
             </item>
            </layout>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="General_simultaneousClearBox">
+            <property name="text">
+             <string>Clear received data in DataTab and graph in PlotTab simultaneously</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

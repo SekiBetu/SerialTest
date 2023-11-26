@@ -41,13 +41,23 @@ jobs:
       - name: Build
         working-directory: ${{ runner.temp }}/shadow_build_dir
         run:  |
-          export JOBS=$((`sysctl -n hw.ncpu`+1))
           qmake -r ${{ env.SOURCE_DIR }}/src/SerialTest.pro CONFIG+=app_bundle
-          make -j$JOBS
+          make -j$((`sysctl -n hw.ncpu` + 1))
 
       - name: Generate DMG file
         run: |
-          macdeployqt ${{ runner.temp }}/shadow_build_dir/SerialTest.app -dmg -verbose=2
+          # Copy all files
+          macdeployqt ${{ runner.temp }}/shadow_build_dir/SerialTest.app -verbose=2
+          # Remove unnecessary module
+          rm -rf ${{ runner.temp }}/shadow_build_dir/SerialTest.app/Contents/Frameworks/QtVirtualKeyboard.framework
+          rm -rf ${{ runner.temp }}/shadow_build_dir/SerialTest.app/Contents/Frameworks/QtQml.framework
+          rm -rf ${{ runner.temp }}/shadow_build_dir/SerialTest.app/Contents/Frameworks/QtQmlModels.framework
+          rm -rf ${{ runner.temp }}/shadow_build_dir/SerialTest.app/Contents/Frameworks/QtQuick.framework
+          rm -rf ${{ runner.temp }}/shadow_build_dir/SerialTest.app/Contents/Frameworks/QtPdf.framework
+          rm -rf ${{ runner.temp }}/shadow_build_dir/SerialTest.app/Contents/PlugIns/virtualkeyboard
+          rm -rf ${{ runner.temp }}/shadow_build_dir/SerialTest.app/Contents/PlugIns/platforminputcontexts
+          # Create dmg file 
+          macdeployqt ${{ runner.temp }}/shadow_build_dir/SerialTest.app -no-plugins -dmg -verbose=2
 
       - name: Save artifact
         uses: actions/upload-artifact@master

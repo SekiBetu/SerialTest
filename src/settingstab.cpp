@@ -99,6 +99,7 @@ void SettingsTab::initSettings()
     connect(ui->Android_dockBox, &QCheckBox::clicked, this, &SettingsTab::savePreference);
     // Android_HWSerialBox will handle the preference itself.
     connect(ui->Opacity_Box, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsTab::savePreference);
+    connect(ui->Data_recordDataBox, &QCheckBox::clicked, this, &SettingsTab::savePreference);
     connect(ui->Data_mergeTimestampBox, &QCheckBox::clicked, this, &SettingsTab::savePreference);
     connect(ui->Data_mergeTimestampIntervalBox, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsTab::savePreference);
 }
@@ -181,6 +182,7 @@ void SettingsTab::savePreference()
     m_settings->endGroup();
     // Android_HWSerialBox will handle the preference itself.
     m_settings->beginGroup("SerialTest_Data");
+    m_settings->setValue("RecordData", ui->Data_recordDataBox->isChecked());
     m_settings->setValue("MergeTimestamp", ui->Data_mergeTimestampBox->isChecked());
     m_settings->setValue("TimestampInterval", ui->Data_mergeTimestampIntervalBox->value());
     m_settings->endGroup();
@@ -198,6 +200,7 @@ void SettingsTab::loadPreference()
     ui->Android_forceLandscapeBox->setChecked(m_settings->value("Android_ForceLandscape", true).toBool());
     ui->Android_dockBox->setChecked(m_settings->value("Android_Dock", false).toBool());
     ui->Opacity_Box->setValue(m_settings->value("Opacity", 100).toInt());
+    ui->General_simultaneousClearBox->setChecked(m_settings->value("ClearBothRxDataAndGraph", false).toBool());
     int themeId = ui->Theme_nameBox->findData(m_settings->value("Theme_Name", "(none)").toString());
     ui->Theme_nameBox->setCurrentIndex((themeId == -1) ? 0 : themeId);
 
@@ -231,6 +234,7 @@ void SettingsTab::loadPreference()
 #endif
     m_settings->endGroup();
     m_settings->beginGroup("SerialTest_Data");
+    ui->Data_recordDataBox->setChecked(m_settings->value("RecordData", false).toBool());
     ui->Data_mergeTimestampBox->setChecked(m_settings->value("MergeTimestamp", true).toBool());
     ui->Data_mergeTimestampIntervalBox->setValue(m_settings->value("TimestampInterval", 10).toInt());
     m_settings->endGroup();
@@ -245,8 +249,10 @@ void SettingsTab::loadPreference()
     on_Opacity_Box_valueChanged(ui->Opacity_Box->value());
 #endif
     on_Theme_setButton_clicked();
+    on_Data_recordDataBox_clicked();
     on_Data_mergeTimestampBox_clicked();
     on_Data_mergeTimestampIntervalBox_valueChanged(ui->Data_mergeTimestampIntervalBox->value());
+    on_General_simultaneousClearBox_clicked();
 
     if(fontValid)
         on_Font_setButton_clicked();
@@ -361,6 +367,12 @@ void SettingsTab::on_Theme_setButton_clicked()
 }
 
 
+void SettingsTab::on_Data_recordDataBox_clicked()
+{
+    emit recordDataChanged(ui->Data_recordDataBox->isChecked());
+}
+
+
 void SettingsTab::on_Data_mergeTimestampBox_clicked()
 {
     emit mergeTimestampChanged(ui->Data_mergeTimestampBox->isChecked());
@@ -370,5 +382,15 @@ void SettingsTab::on_Data_mergeTimestampBox_clicked()
 void SettingsTab::on_Data_mergeTimestampIntervalBox_valueChanged(int arg1)
 {
     emit timestampIntervalChanged(arg1);
+}
+
+
+void SettingsTab::on_General_simultaneousClearBox_clicked()
+{
+    bool clearBoth = ui->General_simultaneousClearBox->isChecked();
+    m_settings->beginGroup("SerialTest");
+    m_settings->setValue("ClearBothRxDataAndGraph", clearBoth);
+    m_settings->endGroup();
+    emit clearBehaviorChanged(clearBoth);
 }
 

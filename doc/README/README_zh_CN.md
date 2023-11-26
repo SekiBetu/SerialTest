@@ -1,5 +1,5 @@
 # SerialTest
-[![downloads](https://img.shields.io/github/downloads/wh201906/SerialTest/total?label=GitHub%E4%B8%8B%E8%BD%BD%E9%87%8F)](https://github.com/wh201906/SerialTest/releases)  [![downloads](https://img.shields.io/sourceforge/dt/serialtest.svg?label=SourceForge%E4%B8%8B%E8%BD%BD%E9%87%8F)](https://sourceforge.net/projects/serialtest/)  [![translation](https://hosted.weblate.org/widgets/serialtest/-/svg-badge.svg)](https://hosted.weblate.org/engage/serialtest/)  
+[![downloads](https://img.shields.io/github/downloads/wh201906/SerialTest/total?label=GitHub%E4%B8%8B%E8%BD%BD%E9%87%8F)](https://github.com/wh201906/SerialTest/releases)  [![downloads](https://img.shields.io/sourceforge/dt/serialtest.svg?label=SourceForge%E4%B8%8B%E8%BD%BD%E9%87%8F)](https://sourceforge.net/projects/serialtest/)  [![installs](https://img.shields.io/flathub/downloads/io.github.wh201906.serialtest?label=Flathub%E5%AE%89%E8%A3%85%E9%87%8F)](https://flathub.org/apps/io.github.wh201906.serialtest)  [![translation](https://hosted.weblate.org/widgets/serialtest/-/svg-badge.svg)](https://hosted.weblate.org/engage/serialtest/)  
 [![Windows CI(MinGW-w64)](https://github.com/wh201906/SerialTest/actions/workflows/build-windows.yml/badge.svg)](https://github.com/wh201906/SerialTest/actions/workflows/build-windows.yml)  [![macOS CI](https://github.com/wh201906/SerialTest/actions/workflows/build-macos.yml/badge.svg)](https://github.com/wh201906/SerialTest/actions/workflows/build-macos.yml)  
 可在Windows/Linux/macOS/Android上运行，功能丰富的调试工具。  
 支持数据收发/实时绘图/快捷方式/文件收发功能。  
@@ -19,7 +19,10 @@
 <details>
 <summary>跨平台</summary>
 
-+ 支持Windows/Linux/macOS/Android
++ 支持Windows 7及更高版本
++ 支持[大多数Linux发行版](https://flathub.org/zh-Hans/setup)
++ 支持macOS 10.13 (High Sierra)及更高版本
++ 支持Android 5.0 (Lollipop)及更高版本
 
 </details>
 
@@ -216,9 +219,10 @@ Android版本还可以在[F-Droid](https://f-droid.org/packages/priv.wh201906.se
 
 ### 1. 安装依赖
 ```bash
+# sudo add-apt-repository universe
 sudo apt-get update
 # sudo apt-get install git build-essential
-sudo apt-get install qt5-default libqt5serialport5-dev qtconnectivity5-dev  
+sudo apt-get install qtbase5-dev qt5-qmake libqt5serialport5-dev qtconnectivity5-dev  
 ```
 ### 2. 获取项目源码
 ```bash
@@ -241,6 +245,7 @@ cp qcustomplot-source/qcustomplot.* ../src
 如果src/目录中没有qcustomplot.cpp，项目在编译时会尝试在生成文件夹和库文件的默认文件夹当中寻找QCustomPlot的库文件(xxx.so/xxx.dll)。
 ### 4. 编译并运行
 ```bash
+export QT_SELECT=qt5
 qmake ../src
 make -j4 && make clean
 ./SerialTest 
