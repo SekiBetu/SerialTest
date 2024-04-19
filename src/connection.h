@@ -118,6 +118,8 @@ public:
     bool SP_setStopBits(QSerialPort::StopBits stopBits);
     bool SP_setParity(QSerialPort::Parity parity);
     bool SP_setFlowControl(QSerialPort::FlowControl flowControl);
+    void SP_setIgnoredErrorList(const QList<QSerialPort::SerialPortError>& errorList);
+    QList<QSerialPort::SerialPortError> SP_getIgnoredErrorList();
 
     // Bluetooth
     QString BT_remoteName();
@@ -176,6 +178,7 @@ private:
     bool m_BLERxCharacteristicValid = false;
     bool m_BLETxCharacteristicValid = false;
     QLowEnergyCharacteristic m_BLETxCharacteristic;
+    QLowEnergyService::WriteMode m_BLETxWriteMode;
     QTcpServer* m_TCPServer = nullptr;
     QTcpSocket* m_TCPSocket = nullptr;
     QUdpSocket* m_UDPSocket = nullptr;
@@ -195,6 +198,7 @@ private:
 
     //
     QSerialPort::PinoutSignals m_SP_lastSignals;
+    QList<QSerialPort::SerialPortError> m_SP_ignoredErrorList;
 
     QByteArray m_buf;
 

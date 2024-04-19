@@ -13,6 +13,9 @@
 #include <QtAndroid>
 #include <QAndroidJniEnvironment>
 #endif
+#ifdef _MSC_VER
+#include <winrtbluetooth.h>
+#endif
 
 const QMap<QString, QString> DeviceTab::m_historyPrefix =
 {
@@ -319,15 +322,6 @@ void DeviceTab::initUI()
 
     ui->Net_localPortEdit->setValidator(m_netPortValidator);
     ui->Net_remotePortEdit->setValidator(m_netPortValidator);
-
-    QScroller::grabGesture(ui->BLEC_argsScrollArea);
-    QScroller::grabGesture(ui->Net_argsScrollArea);
-    QScroller::grabGesture(ui->SP_portList);
-    QScroller::grabGesture(ui->BTServer_deviceList);
-    QScroller::grabGesture(ui->BTClient_deviceList);
-    QScroller::grabGesture(ui->BLEC_deviceList);
-    QScroller::grabGesture(ui->BLEC_UUIDList);
-    QScroller::grabGesture(ui->Net_addrPortList);
 }
 
 void DeviceTab::getAvailableTypes(bool useFirstValid)
@@ -424,19 +418,28 @@ qint64 DeviceTab::updateBTAdapterList()
     // need modify
     getRequiredPermission();
 #endif
+#ifdef _MSC_VER
+    // Only powered on adapters
+    auto BTAdapterList = WinRTBluetooth::allLocalDevices(true);
+#else
+    // All adapters
     auto BTAdapterList = QBluetoothLocalDevice::allDevices();
+#endif
     for(auto it = BTAdapterList.cbegin(); it != BTAdapterList.cend(); ++it)
     {
         qDebug() << "dev:" << it->name() << it->address();
+#ifndef _MSC_VER
         QBluetoothLocalDevice dev(it->address());
-        if(dev.isValid() && dev.hostMode() != QBluetoothLocalDevice::HostPoweredOff)
+        if(!dev.isValid() || dev.hostMode() == QBluetoothLocalDevice::HostPoweredOff)
         {
-            QString name = QString("%1:%2").arg(adapterID + 1).arg(it->name());
-            ui->BTClient_adapterBox->addItem(name, it->address().toString());
-            ui->BTServer_adapterBox->addItem(name, it->address().toString());
-            ui->BLEC_adapterBox->addItem(name, it->address().toString());
-            adapterID++;
+            continue;
         }
+#endif
+        QString name = QString("%1:%2").arg(adapterID + 1).arg(it->name());
+        ui->BTClient_adapterBox->addItem(name, it->address().toString());
+        ui->BTServer_adapterBox->addItem(name, it->address().toString());
+        ui->BLEC_adapterBox->addItem(name, it->address().toString());
+        adapterID++;
     }
     return adapterID; // adapter count
 }
@@ -680,8 +683,13 @@ void DeviceTab::on_openButton_clicked()
         m_connection->open();
 
         settings->beginGroup(m_historyPrefix["BTClient"]);
-        if(arg.RxServiceUUID != QBluetoothUuid::SerialPort)
+        if(arg.RxServiceUUID == QBluetoothUuid::SerialPort)
         {
+            settings->setValue("UserSpecifiedServiceUUID", false);
+        }
+        else
+        {
+            // Update "ServiceUUID" only if the service UUID is not SerialPort
             settings->setValue("UserSpecifiedServiceUUID", ui->BTClient_serviceUUIDBox->isChecked());
             settings->setValue("ServiceUUID", arg.RxServiceUUID);
         }
@@ -1277,9 +1285,13 @@ void DeviceTab::on_refreshButton_clicked()
 
 void DeviceTab::on_BTClient_adapterBox_activated(int index)
 {
+    // This function is actually useless.
+    // According to the source code of Qt Connectivity (v5.9.0, v5.15.2 and v6.7.0),
+    // the constructor of QBluetoothDeviceDiscoveryAgent only checks if the adapter address exists
+    // in QBluetoothLocalDevice::allDevices(). It ignores null address and won't specify which adapter to be used.
     Q_UNUSED(index)
     ui->BTClient_localAddrLabel->setText(ui->BTClient_adapterBox->currentData().toString());
-    setBTClientDiscoveryAgent(QBluetoothAddress(ui->BTClient_adapterBox->currentData().toString()));
+    setBTClientDiscoveryAgent(QBluetoothAddress());
 #ifdef Q_OS_ANDROID
     // invalid MAC address, ignore
     ui->BTClient_localAddrLabel->setHidden(ui->BTClient_localAddrLabel->text() == "02:00:00:00:00:00");
@@ -1715,3 +1727,31 @@ void DeviceTab::on_BTClient_serviceUUIDBox_clicked()
     ui->BTClient_tipLabel->setVisible(!userSpecifiedUUID);
 }
 
+void DeviceTab::setTouchScroll(bool enabled)
+{
+    if(enabled)
+    {
+
+        QScroller::grabGesture(ui->BLEC_argsScrollArea);
+        QScroller::grabGesture(ui->Net_argsScrollArea);
+        QScroller::grabGesture(ui->SP_portList);
+        QScroller::grabGesture(ui->BTServer_deviceList);
+        QScroller::grabGesture(ui->BTClient_deviceList);
+        QScroller::grabGesture(ui->BLEC_deviceList);
+        QScroller::grabGesture(ui->BLEC_UUIDList);
+        QScroller::grabGesture(ui->Net_addrPortList);
+    }
+    else
+    {
+
+        QScroller::ungrabGesture(ui->BLEC_argsScrollArea);
+        QScroller::ungrabGesture(ui->Net_argsScrollArea);
+        QScroller::ungrabGesture(ui->SP_portList);
+        QScroller::ungrabGesture(ui->BTServer_deviceList);
+        QScroller::ungrabGesture(ui->BTClient_deviceList);
+        QScroller::ungrabGesture(ui->BLEC_deviceList);
+        QScroller::ungrabGesture(ui->BLEC_UUIDList);
+        QScroller::ungrabGesture(ui->Net_addrPortList);
+
+    }
+}
