@@ -361,6 +361,7 @@ void DataTab::on_sendButton_clicked()
     }
 
     emit send(data);
+    ui->sendEdit->clear();
 }
 
 void DataTab::syncReceivedEditWithData()
