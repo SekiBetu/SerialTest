@@ -530,7 +530,7 @@ void MainWindow::sendData(const QByteArray& data)
     if(m_TxDataRecording)
     {
         rawSendedData += data;
-        dataTab->appendSendedData(data);
+        dataTab->appendSendedData(data+"\r\n");
     }
     m_TxCount += len;
     updateRxTxLen(false, true);
